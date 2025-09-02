@@ -22,7 +22,7 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() {
       _error = success ? null : 'Usuario o contraseña incorrectos';
     });
-    if (success) {
+    if (success) { 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('¡Inicio de sesión exitoso!')),
       );
