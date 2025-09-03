@@ -5,10 +5,12 @@ import 'services/auth_service.dart';
 void main() {
   // Intento de autentación de usuario
   AuthService.login();
-  runApp(const MainApp());
+  runApp(MainApp());
 }
 
 class MainApp extends StatelessWidget {
+  final String demoCourseId = 'Programcion Movil';
+
   const MainApp({super.key});
 
   @override
