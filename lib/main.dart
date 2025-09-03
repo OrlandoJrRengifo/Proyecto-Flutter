@@ -1,19 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'di.dart' as di;
+import '/presentation/pages/categories_page.dart';
 
 void main() {
-  runApp(const MainApp());
+  runApp(MyApp());
 }
 
-class MainApp extends StatelessWidget {
-  const MainApp({super.key});
-
+class MyApp extends StatelessWidget {
+  final String demoCourseId = 'Programcion Movil';
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
-      home: Scaffold(
-        body: Center(
-          child: Text('Hello World!'),
-        ),
+    return MaterialApp(
+      home: BlocProvider(
+        create: (_) => di.createCategoriesCubit(),
+        child: CategoriesPage(courseId: demoCourseId),
       ),
     );
   }
