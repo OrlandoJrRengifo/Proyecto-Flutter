@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../domain/entities/category.dart';
-import '/categories/controllers/categories_controller.dart';
-import '/categories/presentation/widgets/category_form.dart'; 
+import '../../controllers/categories_controller.dart';
+import '../widgets/category_form.dart'; 
 
 class CategoriesPage extends StatelessWidget {
   final String courseId;

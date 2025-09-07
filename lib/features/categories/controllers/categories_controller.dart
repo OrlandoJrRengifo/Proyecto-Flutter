@@ -1,10 +1,10 @@
 import 'package:get/get.dart';
-import '/categories/domain/entities/category.dart';
-import '/categories/domain/usecases/create_category.dart';
-import '/categories/domain/usecases/list_categories.dart';
-import '/categories/domain/usecases/get_category.dart';
-import '/categories/domain/usecases/update_category.dart';
-import '/categories/domain/usecases/delete_category.dart';
+import '../domain/entities/category.dart';
+import '../domain/usecases/create_category.dart';
+import '../domain/usecases/list_categories.dart';
+import '../domain/usecases/get_category.dart';
+import '../domain/usecases/update_category.dart';
+import '../domain/usecases/delete_category.dart';
 
 class CategoriesController extends GetxController {
   final CreateCategory createCategory;
