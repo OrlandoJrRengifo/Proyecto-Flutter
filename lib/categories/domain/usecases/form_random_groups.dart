@@ -5,7 +5,6 @@ class FormRandomGroups {
   final CategoryRepository repository;
   FormRandomGroups(this.repository);
 
-  /// students: lista de ids de alumnos
   Future<List<List<String>>> call(String categoryId, List<String> students) async {
     final cat = await repository.getById(categoryId);
     if (cat == null) return [];

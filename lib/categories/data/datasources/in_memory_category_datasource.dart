@@ -18,7 +18,7 @@ class InMemoryCategoryDataSource {
 
   Future<CategoryModel> update(CategoryModel category) async {
     final idx = _store.indexWhere((c) => c.id == category.id);
-    if (idx == -1) throw Exception('Category not found');
+    if (idx == -1) throw Exception('Categoria no encontrada');
     _store[idx] = category;
     return category;
   }
