@@ -10,7 +10,12 @@ import 'categories/data/datasources/in_memory_category_datasource.dart';
 import 'categories/controllers/categories_controller.dart';
 import 'categories/presentation/pages/categories_page.dart';
 import 'categories/domain/repositories/category_repository.dart';
-
+import 'screens/courses_screen.dart';
+import 'services/auth_service.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '/presentation/pages/categories_page.dart';
+import 'di.dart' as di;
+import 'presentation/pages/loginScreen.dart';
 
 void main() {
 
