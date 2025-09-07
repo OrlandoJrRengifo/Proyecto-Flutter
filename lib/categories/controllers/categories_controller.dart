@@ -1,67 +1,100 @@
 import 'package:get/get.dart';
-import '../../categories/domain/entities/category.dart';
-import '../../categories/domain/usecases/category_usecases.dart';
+import '../domain/entities/category.dart';
+import '../domain/usecases/category_usecases.dart';
 
 class CategoriesController extends GetxController {
   final CategoryUseCases useCases;
-
+  
   CategoriesController({required this.useCases});
-
-  final categories = <Category>[].obs;
-  final loading = false.obs;
-  final error = ''.obs;
-
-  Future<void> load(String courseId) async {
+  
+  final RxList<Category> categories = <Category>[].obs;
+  final RxBool loading = false.obs;
+  final RxString error = ''.obs;
+  
+  Future<void> loadCategories(int courseId) async {
     try {
       loading.value = true;
       error.value = '';
-      final list = await useCases.listCategories(courseId);
-      categories.assignAll(list);
+      
+      final result = await useCases.listCategories(courseId);
+      categories.assignAll(result);
+      
+      print("📌 Controller -> Categorías cargadas: ${categories.length}");
     } catch (e) {
       error.value = e.toString();
+      print("❌ Error cargando categorías: $e");
     } finally {
       loading.value = false;
     }
   }
-
-Future<void> addCategory({
-  required String courseId,
-  required String name,
-  required GroupingMethod groupingMethod,
-  required int maxMembers,
-}) async {
-  try {
-    final created = await useCases.createCategory(
-      courseId: courseId,
-      name: name,
-      groupingMethod: groupingMethod,
-      maxMembers: maxMembers,
-    );
-    categories.add(created);
-  } catch (e) {
-    error.value = e.toString();
-  }
-}
-
-  Future<void> updateCategoryInList(Category category) async {
+  
+  Future<void> addCategory({
+    required int courseId,
+    required String name,
+    required GroupingMethod groupingMethod,
+    required int maxMembers,
+  }) async {
     try {
-      final updated = await useCases.updateCategory(category);
-      final index = categories.indexWhere((c) => c.id == updated.id);
-      if (index != -1) {
-        categories[index] = updated;
-        categories.refresh();
-      }
+      loading.value = true;
+      error.value = '';
+      
+      final newCategory = await useCases.createCategory(
+        courseId: courseId,
+        name: name,
+        groupingMethod: groupingMethod,
+        maxMembers: maxMembers,
+      );
+      
+      categories.add(newCategory);
+      print("✅ Controller -> Categoría creada: ${newCategory.name}");
+      
     } catch (e) {
       error.value = e.toString();
+      print("❌ Error creando categoría: $e");
+    } finally {
+      loading.value = false;
     }
   }
-
-  Future<void> deleteCategoryFromList(String id) async {
+  
+  Future<void> updateCategoryInList(Category category) async {
     try {
-      await useCases.deleteCategory(id);
-      categories.removeWhere((c) => c.id == id);
+      loading.value = true;
+      error.value = '';
+      
+      final updated = await useCases.updateCategory(category);
+      final index = categories.indexWhere((c) => c.id == updated.id);
+      
+      if (index != -1) {
+        categories[index] = updated;
+      }
+      
+      print("✅ Controller -> Categoría actualizada: ${updated.name}");
+      
     } catch (e) {
       error.value = e.toString();
+      print("❌ Error actualizando categoría: $e");
+    } finally {
+      loading.value = false;
+    }
+  }
+  
+  Future<void> deleteCategoryFromList(int? id) async {
+    if (id == null) return;
+    
+    try {
+      loading.value = true;
+      error.value = '';
+      
+      await useCases.deleteCategory(id);
+      categories.removeWhere((c) => c.id == id);
+      
+      print("✅ Controller -> Categoría eliminada con id: $id");
+      
+    } catch (e) {
+      error.value = e.toString();
+      print("❌ Error eliminando categoría: $e");
+    } finally {
+      loading.value = false;
     }
   }
 }
