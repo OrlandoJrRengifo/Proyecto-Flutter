@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../domain/usecases/auth_service.dart';
+import 'package:get/get.dart';
+import '../controller/auth_controller.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -9,16 +10,22 @@ class RegisterScreen extends StatefulWidget {
 }
 
 class _RegisterScreenState extends State<RegisterScreen> {
-  final _userController = TextEditingController();
+  final _emailController = TextEditingController();
+  final _nameController = TextEditingController();
   final _passController = TextEditingController();
   String? _error;
   String? _success;
 
+  // Obtienes el controlador desde GetX
+  final authController = Get.find<AuthenticationController>();
+
   Future<void> _register() async {
-    final success = await AuthService.register(
-      _userController.text,
+    final success = await authController.signUp(
+      _emailController.text,
+      _nameController.text,
       _passController.text,
     );
+
     setState(() {
       if (success) {
         _success = '¡Registro exitoso!';
@@ -39,9 +46,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
         child: Column(
           children: [
             TextField(
-              controller: _userController,
-              decoration: const InputDecoration(labelText: 'Usuario'),
+              controller: _emailController,
+              decoration: const InputDecoration(labelText: 'Email'),
             ),
+            TextField(
+              controller: _nameController,
+              decoration: const InputDecoration(labelText: 'Nombre'),
+            ), 
             TextField(
               controller: _passController,
               decoration: const InputDecoration(labelText: 'Contraseña'),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../domain/usecases/auth_service.dart';
+import 'package:get/get.dart';
+import '../controller/auth_controller.dart';
 import 'registerScreen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -10,19 +11,24 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final _userController = TextEditingController();
+  final _emailController = TextEditingController();
   final _passController = TextEditingController();
   String? _error;
 
+  // Obtienes el controlador desde GetX
+  final authController = Get.find<AuthenticationController>();
+
   Future<void> _login() async {
-    final success = await AuthService.login(
-      _userController.text,
+    final success = await authController.login(
+      _emailController.text,
       _passController.text,
     );
+
     setState(() {
       _error = success ? null : 'Usuario o contraseña incorrectos';
     });
-    if (success) { 
+
+    if (success) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('¡Inicio de sesión exitoso!')),
       );
@@ -38,8 +44,8 @@ class _LoginScreenState extends State<LoginScreen> {
         child: Column(
           children: [
             TextField(
-              controller: _userController,
-              decoration: const InputDecoration(labelText: 'Usuario'),
+              controller: _emailController,
+              decoration: const InputDecoration(labelText: 'Email'),
             ),
             TextField(
               controller: _passController,

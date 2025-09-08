@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+
+// ==================== Categorías ====================
 import 'features/categories/domain/usecases/create_category.dart';
 import 'features/categories/domain/usecases/list_categories.dart';
 import 'features/categories/domain/usecases/get_category.dart';
@@ -10,28 +12,25 @@ import 'features/categories/data/datasources/in_memory_category_datasource.dart'
 import 'features/categories/controllers/categories_controller.dart';
 import 'features/categories/presentation/pages/categories_page.dart';
 import 'features/categories/domain/repositories/category_repository.dart';
-//import 'screens/courses_screen.dart';
-//import 'services/auth_service.dart';
-//import 'package:flutter_bloc/flutter_bloc.dart';
-//import 'presentation/pages/loginScreen.dart';
+
+// ==================== Autenticación ====================
+import 'features/auth/data/datasources/auth_sqflite_source.dart';
+import 'features/auth/data/datasources/i_auth_source.dart';
+import 'features/auth/data/repositories/auth_repository.dart';
+import 'features/auth/domain/usecases/auth_usecase.dart';
+import 'features/auth/presentation/controller/auth_controller.dart';
+import 'features/auth/presentation/pages/loginScreen.dart';
+
 
 void main() {
-
-  //Categorías - Inyección de dependencias con GetX
-  // DataSource
+  // ==================== Categorías ====================
   Get.lazyPut(() => InMemoryCategoryDataSource());
-
-  // Repository (recibe datasource)
   Get.lazyPut<CategoryRepository>(() => CategoryRepositoryImpl(Get.find()));
-
-  // Usecases (reciben repository)
   Get.lazyPut(() => CreateCategory(Get.find()));
   Get.lazyPut(() => ListCategories(Get.find()));
   Get.lazyPut(() => GetCategory(Get.find()));
   Get.lazyPut(() => UpdateCategory(Get.find()));
   Get.lazyPut(() => DeleteCategory(Get.find()));
-
-  // Controller (recibe los usecases)
   Get.lazyPut(() => CategoriesController(
         createCategory: Get.find(),
         listCategories: Get.find(),
@@ -40,19 +39,25 @@ void main() {
         deleteCategory: Get.find(),
       ));
 
+  // ==================== Autenticación ====================
+  Get.put<IAuthenticationSource>(AuthenticationLocalSource());
+  Get.put(AuthRepository(Get.find<IAuthenticationSource>()));
+  Get.put(AuthenticationUseCase(Get.find<AuthRepository>()));
+  Get.put(AuthenticationController(Get.find<AuthenticationUseCase>()));
+
   runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  final String demoCourseId = 'Programacion Movil';
-
   @override
   Widget build(BuildContext context) {
-   return GetMaterialApp(
+    return GetMaterialApp(
       title: 'Sistema de Cursos',
-      home: CategoriesPage(courseId: "Programacion Movil"),
+      debugShowCheckedModeBanner: false,
+      // Pantalla inicial: Login
+      home: const LoginScreen(),
     );
   }
 }
