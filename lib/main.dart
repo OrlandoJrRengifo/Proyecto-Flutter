@@ -16,8 +16,27 @@ import 'courses/data/repositories/course_repository_impl.dart';
 import 'courses/controllers/course_controller.dart'; 
 import 'courses/presentation/pages/courses_page.dart';
 
+// SQFLite para web (para pruebas)
+//import 'package:flutter/foundation.dart' show kIsWeb;
+//import 'dart:io' show Platform;
+//import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+//import 'package:sqflite_common_ffi_web/sqflite_ffi_web.dart';
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+/*
+  // sqflite para web
+  if (kIsWeb) {
+    databaseFactory = databaseFactoryFfiWeb; // IndexedDB en navegador
+  } else if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
+    sqfliteFfiInit();
+    databaseFactory = databaseFactoryFfi; // FFI en desktop
+  } else {
+    // Android / iOS ya usa el `sqflite` normal
+  }
+*/
+
   // Inyección de dependencias con GetX
   // Categorias
   Get.lazyPut<ICategoryLocalDataSource>(() => CategoryLocalDataSourceSqflite(), fenix: true);
@@ -44,7 +63,7 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: const CoursesPage(), 
+      home: const CourseDashboard(), 
     );
   }
 }
