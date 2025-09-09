@@ -1,11 +1,12 @@
 import '../../domain/entities/category.dart';
 import '../../domain/repositories/category_repository.dart';
-import '../datasources/in_memory_category_datasource.dart';
+import '../datasources/i_category_local_datasource.dart';
 import '../models/category_model.dart';
 
 class CategoryRepositoryImpl implements CategoryRepository {
-  final InMemoryCategoryDataSource datasource;
-  CategoryRepositoryImpl(this.datasource);
+  final ICategoryLocalDataSource localDataSource;
+  
+  CategoryRepositoryImpl(this.localDataSource);
 
   @override
   Future<Category> create(Category category) async {
@@ -14,21 +15,27 @@ class CategoryRepositoryImpl implements CategoryRepository {
       courseId: category.courseId,
       name: category.name,
       groupingMethod: category.groupingMethod,
-      maxMembers: category.maxMembers,
+      maxGroupSize: category.maxGroupSize,
+      createdAt: category.createdAt,
     );
-    return datasource.create(model);
+    
+    final savedModel = await localDataSource.create(model);
+    return savedModel;
   }
 
   @override
-  Future<void> delete(String id) => datasource.delete(id);
+  Future<void> delete(int id) => localDataSource.delete(id);
 
   @override
-  Future<Category?> getById(String id) => datasource.getById(id);
+  Future<Category?> getById(int id) async {
+    final model = await localDataSource.getById(id);
+    return model;
+  }
 
   @override
-  Future<List<Category>> listByCourse(String courseId) async {
-    final list = await datasource.listByCourse(courseId);
-    return list;
+  Future<List<Category>> listByCourse(int courseId) async {
+    final models = await localDataSource.listByCourse(courseId);
+    return models;
   }
 
   @override
@@ -38,8 +45,11 @@ class CategoryRepositoryImpl implements CategoryRepository {
       courseId: category.courseId,
       name: category.name,
       groupingMethod: category.groupingMethod,
-      maxMembers: category.maxMembers,
+      maxGroupSize: category.maxGroupSize,
+      createdAt: category.createdAt,
     );
-    return datasource.update(model);
+    
+    final updatedModel = await localDataSource.update(model);
+    return updatedModel;
   }
 }

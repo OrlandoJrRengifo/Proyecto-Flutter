@@ -1,17 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-// ==================== Categorías ====================
-import 'features/categories/domain/usecases/create_category.dart';
-import 'features/categories/domain/usecases/list_categories.dart';
-import 'features/categories/domain/usecases/get_category.dart';
-import 'features/categories/domain/usecases/update_category.dart';
-import 'features/categories/domain/usecases/delete_category.dart';
-import 'features/categories/data/repositories/category_repository_impl.dart';
-import 'features/categories/data/datasources/in_memory_category_datasource.dart';
-import 'features/categories/controllers/categories_controller.dart';
-import 'features/categories/presentation/pages/categories_page.dart';
-import 'features/categories/domain/repositories/category_repository.dart';
+// Categorias
+import 'categories/domain/repositories/category_repository.dart';
+import 'categories/domain/usecases/category_usecases.dart';
+import 'categories/data/datasources/i_category_local_datasource.dart';
+import 'categories/data/datasources/category_local_datasource_sqflite.dart';
+import 'categories/data/repositories/category_repository_impl.dart';
+import 'categories/controllers/categories_controller.dart';
+// Cursos
+import 'courses/domain/repositories/course_repository.dart';
+import 'courses/domain/usecases/course_usecases.dart';
+import 'courses/data/datasources/i_course_local_datasource.dart';
+import 'courses/data/datasources/course_local_datasource_sqflite.dart';
+import 'courses/data/repositories/course_repository_impl.dart';
+import 'courses/controllers/course_controller.dart'; 
+import 'courses/presentation/pages/courses_page.dart';
+
+// SQFLite para web (para pruebas)
+//import 'package:flutter/foundation.dart' show kIsWeb;
+//import 'dart:io' show Platform;
+//import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+//import 'package:sqflite_common_ffi_web/sqflite_ffi_web.dart';
 
 // ==================== Autenticación ====================
 import 'features/auth/data/datasources/auth_sqflite_source.dart';
@@ -23,41 +33,55 @@ import 'features/auth/presentation/pages/loginScreen.dart';
 
 
 void main() {
-  // ==================== Categorías ====================
-  Get.lazyPut(() => InMemoryCategoryDataSource());
-  Get.lazyPut<CategoryRepository>(() => CategoryRepositoryImpl(Get.find()));
-  Get.lazyPut(() => CreateCategory(Get.find()));
-  Get.lazyPut(() => ListCategories(Get.find()));
-  Get.lazyPut(() => GetCategory(Get.find()));
-  Get.lazyPut(() => UpdateCategory(Get.find()));
-  Get.lazyPut(() => DeleteCategory(Get.find()));
-  Get.lazyPut(() => CategoriesController(
-        createCategory: Get.find(),
-        listCategories: Get.find(),
-        getCategory: Get.find(),
-        updateCategory: Get.find(),
-        deleteCategory: Get.find(),
-      ));
+  WidgetsFlutterBinding.ensureInitialized();
+
+/*
+  // sqflite para web
+  if (kIsWeb) {
+    databaseFactory = databaseFactoryFfiWeb; // IndexedDB en navegador
+  } else if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
+    sqfliteFfiInit();
+    databaseFactory = databaseFactoryFfi; // FFI en desktop
+  } else {
+    // Android / iOS ya usa el `sqflite` normal
+  }
+*/
+
+  // Inyección de dependencias con GetX
+  // Categorias
+  Get.lazyPut<ICategoryLocalDataSource>(() => CategoryLocalDataSourceSqflite(), fenix: true);
+  Get.lazyPut<CategoryRepository>(() => CategoryRepositoryImpl(Get.find()), fenix: true);
+  Get.lazyPut(() => CategoryUseCases(Get.find()), fenix: true);
+  Get.put(CategoriesController(useCases: Get.find()), permanent: true);
+  // Cursos
+  Get.lazyPut<ICourseLocalDataSource>(() => CourseLocalDataSourceSqflite(), fenix: true);
+  Get.lazyPut<CourseRepository>(() => CourseRepositoryImpl(Get.find()), fenix: true);
+  Get.lazyPut(() => CourseUseCases(Get.find()), fenix: true);
+  Get.put(CoursesController(useCases: Get.find()), permanent: true);
 
   // ==================== Autenticación ====================
   Get.put<IAuthenticationSource>(AuthenticationLocalSource());
   Get.put(AuthRepository(Get.find<IAuthenticationSource>()));
   Get.put(AuthenticationUseCase(Get.find<AuthRepository>()));
   Get.put(AuthenticationController(Get.find<AuthenticationUseCase>()));
-
+  
   runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
-
   @override
   Widget build(BuildContext context) {
     return GetMaterialApp(
       title: 'Sistema de Cursos',
-      debugShowCheckedModeBanner: false,
+      //debugShowCheckedModeBanner: false,
       // Pantalla inicial: Login
-      home: const LoginScreen(),
+      //home: const LoginScreen(),
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+        visualDensity: VisualDensity.adaptivePlatformDensity,
+      ),
+      home: const CourseDashboard(), 
     );
   }
 }

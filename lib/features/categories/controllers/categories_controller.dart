@@ -1,51 +1,90 @@
 import 'package:get/get.dart';
 import '../domain/entities/category.dart';
-import '../domain/usecases/create_category.dart';
-import '../domain/usecases/list_categories.dart';
-import '../domain/usecases/get_category.dart';
-import '../domain/usecases/update_category.dart';
-import '../domain/usecases/delete_category.dart';
+import '../domain/usecases/category_usecases.dart';
 
 class CategoriesController extends GetxController {
-  final CreateCategory createCategory;
-  final ListCategories listCategories;
-  final GetCategory getCategory;
-  final UpdateCategory updateCategory;
-  final DeleteCategory deleteCategory;
-
-  CategoriesController({
-    required this.createCategory,
-    required this.listCategories,
-    required this.getCategory,
-    required this.updateCategory,
-    required this.deleteCategory,
-  });
-
-  // Estado observable
-  var categories = <Category>[].obs;
-  var loading = false.obs;
-  var error = ''.obs;
-
-  //carga todas las categorías desde el backend
-  Future<void> load(String courseId) async {
+  final CategoryUseCases useCases;
+  
+  CategoriesController({required this.useCases});
+  
+  final RxList<Category> categories = <Category>[].obs;
+  final RxBool loading = false.obs;
+  final RxString error = ''.obs;
+  
+  Future<void> loadCategories(int courseId) async {
     try {
       loading.value = true;
       error.value = '';
-      final list = await listCategories(courseId);
-      categories.assignAll(list);
+      
+      final result = await useCases.listCategories(courseId);
+      categories.assignAll(result);
+      
     } catch (e) {
       error.value = e.toString();
     } finally {
       loading.value = false;
     }
   }
-
-  Future<void> addCategory(Category category) async {
+  
+  Future<void> addCategory({
+    required int courseId,
+    required String name,
+    required GroupingMethod groupingMethod,
+    required int maxMembers,
+  }) async {
     try {
-      final created = await createCategory(category);
-      categories.add(created);
+      loading.value = true;
+      error.value = '';
+      
+      final newCategory = await useCases.createCategory(
+        courseId: courseId,
+        name: name,
+        groupingMethod: groupingMethod,
+        maxMembers: maxMembers,
+      );
+      
+      categories.add(newCategory);
+      
     } catch (e) {
       error.value = e.toString();
+    } finally {
+      loading.value = false;
+    }
+  }
+  
+  Future<void> updateCategoryInList(Category category) async {
+    try {
+      loading.value = true;
+      error.value = '';
+      
+      final updated = await useCases.updateCategory(category);
+      final index = categories.indexWhere((c) => c.id == updated.id);
+      
+      if (index != -1) {
+        categories[index] = updated;
+      }
+      
+    } catch (e) {
+      error.value = e.toString();
+    } finally {
+      loading.value = false;
+    }
+  }
+  
+  Future<void> deleteCategoryFromList(int? id) async {
+    if (id == null) return;
+    
+    try {
+      loading.value = true;
+      error.value = '';
+      
+      await useCases.deleteCategory(id);
+      categories.removeWhere((c) => c.id == id);
+      
+    } catch (e) {
+      error.value = e.toString();
+    } finally {
+      loading.value = false;
     }
   }
 }

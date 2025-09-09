@@ -1,33 +1,37 @@
 enum GroupingMethod { random, selfAssigned }
 
 class Category {
-  final String id;
-  final String courseId;
+  final int? id;
+  final int courseId;
   final String name;
   final GroupingMethod groupingMethod;
-  final int maxMembers;
+  final int? maxGroupSize;
+  final DateTime? createdAt;
 
   Category({
-    required this.id,
+    this.id,
     required this.courseId,
     required this.name,
     required this.groupingMethod,
-    required this.maxMembers,
+    this.maxGroupSize,
+    this.createdAt,
   });
 
   Category copyWith({
-    String? id,
-    String? courseId,
+    int? id,
+    int? courseId,
     String? name,
     GroupingMethod? groupingMethod,
-    int? maxMembers,
+    int? maxGroupSize,
+    DateTime? createdAt,
   }) {
     return Category(
       id: id ?? this.id,
       courseId: courseId ?? this.courseId,
       name: name ?? this.name,
       groupingMethod: groupingMethod ?? this.groupingMethod,
-      maxMembers: maxMembers ?? this.maxMembers,
+      maxGroupSize: maxGroupSize ?? this.maxGroupSize,
+      createdAt: createdAt ?? this.createdAt,
     );
   }
 }
