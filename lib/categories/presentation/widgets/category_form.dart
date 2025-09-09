@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+
 import '../../domain/entities/category.dart';
 
 class CategoryFormDialog extends StatefulWidget {
