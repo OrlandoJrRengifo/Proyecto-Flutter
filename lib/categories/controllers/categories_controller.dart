@@ -19,10 +19,8 @@ class CategoriesController extends GetxController {
       final result = await useCases.listCategories(courseId);
       categories.assignAll(result);
       
-      print("📌 Controller -> Categorías cargadas: ${categories.length}");
     } catch (e) {
       error.value = e.toString();
-      print("❌ Error cargando categorías: $e");
     } finally {
       loading.value = false;
     }
@@ -46,11 +44,9 @@ class CategoriesController extends GetxController {
       );
       
       categories.add(newCategory);
-      print("✅ Controller -> Categoría creada: ${newCategory.name}");
       
     } catch (e) {
       error.value = e.toString();
-      print("❌ Error creando categoría: $e");
     } finally {
       loading.value = false;
     }
@@ -68,11 +64,8 @@ class CategoriesController extends GetxController {
         categories[index] = updated;
       }
       
-      print("✅ Controller -> Categoría actualizada: ${updated.name}");
-      
     } catch (e) {
       error.value = e.toString();
-      print("❌ Error actualizando categoría: $e");
     } finally {
       loading.value = false;
     }
@@ -88,11 +81,8 @@ class CategoriesController extends GetxController {
       await useCases.deleteCategory(id);
       categories.removeWhere((c) => c.id == id);
       
-      print("✅ Controller -> Categoría eliminada con id: $id");
-      
     } catch (e) {
       error.value = e.toString();
-      print("❌ Error eliminando categoría: $e");
     } finally {
       loading.value = false;
     }
