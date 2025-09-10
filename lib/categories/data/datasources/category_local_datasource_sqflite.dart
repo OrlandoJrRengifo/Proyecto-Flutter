@@ -30,9 +30,9 @@ class CategoryLocalDataSourceSqflite implements ICategoryLocalDataSource {
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         courseId INTEGER NOT NULL,
         name TEXT NOT NULL,
-        grouping_method TEXT NOT NULL,
-        max_group_size INTEGER,
-        created_at TEXT DEFAULT (datetime('now'))
+        groupingMethod TEXT NOT NULL,
+        maxGroupSize INTEGER,
+        createdAt TEXT DEFAULT (datetime('now'))
       )
     ''');
   

@@ -15,7 +15,7 @@ import 'courses/domain/usecases/course_usecases.dart';
 import 'courses/data/datasources/i_course_local_datasource.dart';
 import 'courses/data/datasources/course_local_datasource_sqflite.dart';
 import 'courses/data/repositories/course_repository_impl.dart';
-import 'courses/controllers/course_controller.dart'; 
+import 'courses/presentation/controller/course_controller.dart'; 
 import 'courses/presentation/pages/courses_page.dart';
 
 // SQFLite para web (para pruebas)
@@ -41,44 +41,38 @@ import 'features/auth/presentation/controller/auth_controller.dart';
 import 'features/auth/presentation/pages/loginScreen.dart';
 
 
-void main() async{
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await AppDatabase.instance;
-/*
-  // sqflite para web
-  if (kIsWeb) {
-    databaseFactory = databaseFactoryFfiWeb; // IndexedDB en navegador
-  } else if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
-    sqfliteFfiInit();
-    databaseFactory = databaseFactoryFfi; // FFI en desktop
-  } else {
-    // Android / iOS ya usa el `sqflite` normal
-  }
-*/
 
-  // Inyección de dependencias con GetX
-  // Categorias
+  // ==================== Autenticación ====================
+  // Registrar primero todo lo relacionado con auth
+  Get.put<IAuthenticationSource>(AuthSqfliteSource(), permanent: true);
+  Get.put(AuthRepository(Get.find<IAuthenticationSource>()), permanent: true);
+  Get.put(AuthenticationUseCase(Get.find<AuthRepository>()), permanent: true);
+  Get.put(AuthenticationController(Get.find<AuthenticationUseCase>()), permanent: true);
+
+  // Ahora que AuthenticationController existe, se puede registrar CoursesController
+  
+
+  // ==================== Categorías ====================
   Get.lazyPut<ICategoryLocalDataSource>(() => CategoryLocalDataSourceSqflite(), fenix: true);
   Get.lazyPut<CategoryRepository>(() => CategoryRepositoryImpl(Get.find()), fenix: true);
   Get.lazyPut(() => CategoryUseCases(Get.find()), fenix: true);
   Get.put(CategoriesController(useCases: Get.find()), permanent: true);
-  // Cursos
+
+  // ==================== Cursos ====================
   Get.lazyPut<ICourseLocalDataSource>(() => CourseLocalDataSourceSqflite(), fenix: true);
   Get.lazyPut<CourseRepository>(() => CourseRepositoryImpl(Get.find()), fenix: true);
   Get.lazyPut(() => CourseUseCases(Get.find()), fenix: true);
   Get.put(CoursesController(useCases: Get.find()), permanent: true);
-  //inscripciones
-  Get.lazyPut<IUserCourseSource>(() => UserCourseSqfliteSource(),fenix: true,);
-  Get.lazyPut<IUserCourseRepository>(() => UserCourseRepository(Get.find()),fenix: true,);
+
+  // ==================== Inscripciones ====================
+  Get.lazyPut<IUserCourseSource>(() => UserCourseSqfliteSource(), fenix: true);
+  Get.lazyPut<IUserCourseRepository>(() => UserCourseRepository(Get.find()), fenix: true);
   Get.lazyPut(() => UserCourseUseCase(Get.find()), fenix: true);
   Get.put(UserCourseController(Get.find()), permanent: true);
 
-  // Autenticación
-  Get.put<IAuthenticationSource>(AuthSqfliteSource());
-  Get.put(AuthRepository(Get.find<IAuthenticationSource>()));
-  Get.put(AuthenticationUseCase(Get.find<AuthRepository>()));
-  Get.put(AuthenticationController(Get.find<AuthenticationUseCase>()));
-  
   runApp(const MyApp());
 }
 
@@ -93,7 +87,6 @@ class MyApp extends StatelessWidget {
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
       home: const LoginScreen(),
-      //home: const CourseDashboard(), 
     );
   }
 }

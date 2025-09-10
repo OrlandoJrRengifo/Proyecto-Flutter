@@ -22,11 +22,11 @@ class CategoryModel extends Category {
       id: m['id'] is int ? m['id'] as int : (m['id'] != null ? int.parse(m['id'].toString()) : null),
       courseId: m['courseId'] is int ? m['courseId'] as int : int.parse(m['courseId'].toString()),
       name: m['name'] as String,
-      groupingMethod: (m['grouping_method'] as String?) == 'random' 
+      groupingMethod: (m['groupingMethod'] as String?) == 'random' 
           ? GroupingMethod.random 
           : GroupingMethod.selfAssigned,
-      maxGroupSize: m['max_group_size'] != null ? (m['max_group_size'] as int?) : null,
-      createdAt: m['created_at'] != null ? DateTime.parse(m['created_at'] as String) : null,
+      maxGroupSize: m['maxGroupSize'] != null ? (m['maxGroupSize'] as int?) : null,
+      createdAt: m['createdAt'] != null ? DateTime.parse(m['createdAt'] as String) : null,
     );
   }
 
@@ -34,8 +34,8 @@ class CategoryModel extends Category {
     final map = <String, dynamic>{
       'courseId': courseId,
       'name': name,
-      'grouping_method': groupingMethod == GroupingMethod.random ? 'random' : 'self_assigned',
-      'max_group_size': maxGroupSize,
+      'groupingMethod': groupingMethod == GroupingMethod.random ? 'random' : 'self_assigned',
+      'maxGroupSize': maxGroupSize,
     };
     
     if (id != null) map['id'] = id;

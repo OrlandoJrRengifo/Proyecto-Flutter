@@ -8,6 +8,10 @@ class AppDatabase {
     if (_db != null) return _db!;
 
     final path = join(await getDatabasesPath(), 'app.db');
+
+    // 🔹 En desarrollo, opcionalmente eliminar la DB anterior
+    await deleteDatabase(path);
+
     _db = await openDatabase(
       path,
       version: 1,
@@ -22,23 +26,15 @@ class AppDatabase {
           )
         ''');
 
-        // Tabla de categorías
-        await db.execute('''
-          CREATE TABLE categories(
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL
-          )
-        ''');
-
-        // Tabla de cursos
+        // Tabla de cursos (alineada con CourseModel)
         await db.execute('''
           CREATE TABLE courses(
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            title TEXT NOT NULL,
+            name TEXT NOT NULL,
             code TEXT NOT NULL UNIQUE,
-            teacherId INTEGER,
-            capacity INTEGER NOT NULL,
-            currCap INTEGER NOT NULL DEFAULT 0
+            teacherId INTEGER NOT NULL,
+            maxStudents INTEGER NOT NULL,
+            createdAt TEXT DEFAULT (datetime('now'))
           )
         ''');
 
@@ -63,26 +59,19 @@ class AppDatabase {
           await db.insert("users", user, conflictAlgorithm: ConflictAlgorithm.ignore);
         }
 
-        // Crear curso inicial
+        // Crear curso inicial (usando el modelo correcto)
         final course = {
           "id": 1,
-          "title": "Curso1",
+          "name": "Curso1",
           "code": "ABC123",
-          "teacherId": 1, // ejemplo
-          "capacity": 30,
-          "currCap": 0
+          "teacherId": 1,
+          "maxStudents": 30,
+          "createdAt": DateTime.now().toIso8601String(),
         };
         await db.insert("courses", course, conflictAlgorithm: ConflictAlgorithm.ignore);
 
-        // Asignar usuario id=2 al curso y aumentar currCap
         await db.insert("user_courses", {"user_id": 2, "course_id": 1},
             conflictAlgorithm: ConflictAlgorithm.ignore);
-
-        await db.rawUpdate('''
-          UPDATE courses
-          SET currCap = currCap + 1
-          WHERE id = 1
-        ''');
       },
     );
 

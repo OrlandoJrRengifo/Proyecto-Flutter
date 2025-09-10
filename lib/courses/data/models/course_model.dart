@@ -22,9 +22,9 @@ class CourseModel extends Course {
       id: m['id'] is int ? m['id'] as int : (m['id'] != null ? int.parse(m['id'].toString()) : null),
       name: m['name'] as String,
       code: m['code'] as String,
-      teacherId: m['teacher_id'] is int ? m['teacher_id'] as int : int.parse(m['teacher_id'].toString()),
-      maxStudents: m['max_students'] is int ? m['max_students'] as int : int.parse(m['max_students'].toString()),
-      createdAt: m['created_at'] != null ? DateTime.parse(m['created_at'] as String) : null,
+      teacherId: m['teacherId'] is int ? m['teacherId'] as int : int.parse(m['teacherId'].toString()),
+      maxStudents: m['maxStudents'] is int ? m['maxStudents'] as int : int.parse(m['maxStudents'].toString()),
+      createdAt: m['createdAt'] != null ? DateTime.parse(m['createdAt'] as String) : null,
     );
   }
 
@@ -32,8 +32,8 @@ class CourseModel extends Course {
     final map = <String, dynamic>{
       'name': name,
       'code': code,
-      'teacher_id': teacherId,
-      'max_students': maxStudents,
+      'teacherId': teacherId,
+      'maxStudents': maxStudents,
     };
     
     if (id != null) map['id'] = id;

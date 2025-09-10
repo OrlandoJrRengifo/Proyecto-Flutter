@@ -4,7 +4,7 @@ import 'package:get/get.dart';
 
 import '../../domain/entities/course.dart';
 import '../widgets/course_form_dialog.dart';
-import '../../controllers/course_controller.dart';
+import '../controller/course_controller.dart';
 import '../../../../categories/presentation/pages/categories_page.dart';
 
 class CourseDashboard extends StatefulWidget {
