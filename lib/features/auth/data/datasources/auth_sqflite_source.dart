@@ -1,45 +1,29 @@
 import 'package:sqflite/sqflite.dart';
-import 'package:path/path.dart';
+import '../../../../core/app_database.dart';
 import '../../domain/entities/user.dart';
 import 'i_auth_source.dart';
 
-class AuthenticationLocalSource implements IAuthenticationSource {
-  static Database? _database;
-
-  Future<Database> get database async {
-    if (_database != null) return _database!;
-    final path = join(await getDatabasesPath(), 'auth.db');
-    _database = await openDatabase(
-      path,
-      version: 1,
-      onCreate: (db, version) async {
-        await db.execute('''
-          CREATE TABLE users(
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL,
-            email TEXT NOT NULL UNIQUE,
-            password TEXT NOT NULL
-          )
-        ''');
-      },
-    );
-    return _database!;
-  }
+class AuthSqfliteSource implements IAuthenticationSource {
+  Future<Database> get _db async => await AppDatabase.instance;
 
   @override
-  Future<bool> login(User user) async {
-    final db = await database;
+  Future<User?> login(String email, String password) async {
+    final db = await AppDatabase.instance;
     final maps = await db.query(
       'users',
       where: 'email = ? AND password = ?',
-      whereArgs: [user.email, user.password],
+      whereArgs: [email, password],
+      limit: 1,
     );
-    return maps.isNotEmpty;
+    if (maps.isNotEmpty) {
+      return User.fromJson(maps.first);
+    }
+    return null;
   }
 
   @override
   Future<bool> signUp(User user) async {
-    final db = await database;
+    final db = await _db;
     try {
       await db.insert('users', user.toJson());
       return true;

@@ -1,12 +1,15 @@
 import 'package:get/get.dart';
 import 'package:loggy/loggy.dart';
 import '../../domain/usecases/auth_usecase.dart';
+import '../../domain/entities/user.dart';
 
 class AuthenticationController extends GetxController {
-  final AuthenticationUseCase authentication;
-  final logged = false.obs;
+  final AuthenticationUseCase _authUseCase;
 
-  AuthenticationController(this.authentication);
+  AuthenticationController(this._authUseCase);
+
+  final Rxn<User> currentUser = Rxn<User>();
+  bool get isLoggedIn => currentUser.value != null;
 
   @override
   Future<void> onInit() async {
@@ -14,27 +17,26 @@ class AuthenticationController extends GetxController {
     logInfo('AuthenticationController initialized');
   }
 
-  bool get isLogged => logged.value;
-
   Future<bool> login(String email, String password) async {
-    logInfo('AuthenticationController: Login $email');
-    var rta = await authentication.login(email, password);
-    logged.value = rta;
-    return rta;
+    final user = await _authUseCase.login(email, password);
+    if (user != null) {
+      currentUser.value = user;
+      return true;
+    }
+    return false;
   }
 
   Future<bool> signUp(String email, String name, String password) async {
     logInfo('AuthenticationController: Sign Up $email');
-    var rta = await authentication.signUp(email, name, password);
-    logged.value = rta;
+    final rta = await _authUseCase.signUp(email, name, password);
+    if (rta) {
+      currentUser.value = User(email: email, name: name, password: password);
+    }
     return rta;
   }
 
   Future<void> logOut() async {
-    logInfo('AuthenticationController: Log Out');
-    await authentication.logOut();
-    logged.value = false;
+    await _authUseCase.logOut();
+    currentUser.value = null;
   }
-
 }
-

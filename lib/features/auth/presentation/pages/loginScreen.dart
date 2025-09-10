@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../controller/auth_controller.dart';
 import 'registerScreen.dart';
+import '../../../../courses/presentation/pages/courses_page.dart';
+import 'dummy.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -15,7 +17,6 @@ class _LoginScreenState extends State<LoginScreen> {
   final _passController = TextEditingController();
   String? _error;
 
-  // Obtienes el controlador desde GetX
   final authController = Get.find<AuthenticationController>();
 
   Future<void> _login() async {
@@ -29,10 +30,11 @@ class _LoginScreenState extends State<LoginScreen> {
     });
 
     if (success) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('¡Inicio de sesión exitoso!')),
-      );
-    }
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('¡Inicio de sesión exitoso!')),
+    );
+    Get.off(() => const CourseDashboard());
+  }
   }
 
   @override
