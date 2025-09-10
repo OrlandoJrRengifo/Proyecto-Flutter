@@ -24,6 +24,14 @@ import 'courses/presentation/pages/courses_page.dart';
 //import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 //import 'package:sqflite_common_ffi_web/sqflite_ffi_web.dart';
 
+
+// Inscripciones
+import 'features/RegToCourse/domain/repositories/i_user_course_repository.dart';
+import 'features/RegToCourse/domain/usecases/user_course_usecase.dart';
+import 'features/RegToCourse/data/datasources/i_user_course_source.dart';
+import 'features/RegToCourse/data/datasources/user_course_sqflite_source.dart';
+import 'features/RegToCourse/data/repositories/user_course_repository.dart';
+import 'features/RegToCourse/presentation/controller/user_course_controller.dart';
 // ==================== Autenticación ====================
 import 'features/auth/data/datasources/auth_sqflite_source.dart';
 import 'features/auth/data/datasources/i_auth_source.dart';
@@ -59,6 +67,11 @@ void main() async{
   Get.lazyPut<CourseRepository>(() => CourseRepositoryImpl(Get.find()), fenix: true);
   Get.lazyPut(() => CourseUseCases(Get.find()), fenix: true);
   Get.put(CoursesController(useCases: Get.find()), permanent: true);
+  //inscripciones
+  Get.lazyPut<IUserCourseSource>(() => UserCourseSqfliteSource(),fenix: true,);
+  Get.lazyPut<IUserCourseRepository>(() => UserCourseRepository(Get.find()),fenix: true,);
+  Get.lazyPut(() => UserCourseUseCase(Get.find()), fenix: true);
+  Get.put(UserCourseController(Get.find()), permanent: true);
 
   // Autenticación
   Get.put<IAuthenticationSource>(AuthSqfliteSource());
