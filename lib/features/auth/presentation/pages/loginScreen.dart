@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../controller/auth_controller.dart';
 import 'registerScreen.dart';
-import '../../../RegToCourse/presentation/pages/user_course_screen.dart';
+import '../../../../courses/presentation/pages/courses_page.dart';
 import 'dummy.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -30,11 +30,10 @@ class _LoginScreenState extends State<LoginScreen> {
     });
 
     if (success) {
-      /*
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('¡Inicio de sesión exitoso!')),
-    );*/
-    Get.off(() => const UserCoursesPage());
+    );
+    Get.off(() => const CourseDashboard());
   }
   }
 
