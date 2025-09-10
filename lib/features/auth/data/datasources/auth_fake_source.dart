@@ -1,7 +1,7 @@
 import '../../domain/entities/user.dart';
 import 'i_auth_source.dart';
 
-class AuthenticationFakeSource implements IAuthenticationSource {
+class AuthFakeSource implements IAuthenticationSource {
   final Map<String, dynamic> _jsonDb = {
     "users": [
       {
