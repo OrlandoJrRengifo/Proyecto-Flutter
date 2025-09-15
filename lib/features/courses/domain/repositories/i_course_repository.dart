@@ -1,6 +1,6 @@
 import '../entities/course.dart';
 
-abstract class CourseRepository {
+abstract class ICourseRepository {
   Future<Course> create(Course course);
   Future<Course?> getById(int id);
   Future<List<Course>> listByTeacher(int teacherId);

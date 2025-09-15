@@ -5,7 +5,9 @@ import 'package:get/get.dart';
 import '../../domain/entities/course.dart';
 import '../widgets/course_form_dialog.dart';
 import '../controller/course_controller.dart';
-import '../../../../categories/presentation/pages/categories_page.dart';
+import '../../../RegToCourse/presentation/controller/user_course_controller.dart';
+import '../../../../../categories/presentation/pages/categories_page.dart';
+import '../../../auth/presentation/controller/auth_controller.dart';
 
 class CourseDashboard extends StatefulWidget {
   const CourseDashboard({Key? key}) : super(key: key);
@@ -17,24 +19,44 @@ class CourseDashboard extends StatefulWidget {
 class _CourseDashboardState extends State<CourseDashboard>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
-  late final CoursesController controller;
+  late final CoursesController courseController;
+  late final UserCourseController userCourseController;
   String? copiedCode;
-  
+  final RxList<Course> _enrolledCourses = <Course>[].obs;
   // Por ahora asumimos role de teacher, esto debería venir del auth
   String userRole = "teacher";
 
   @override
   void initState() {
     super.initState();
-    controller = Get.find<CoursesController>();
+    courseController = Get.find<CoursesController>();
+    userCourseController = Get.find<UserCourseController>();
+
     _tabController = TabController(
       length: 2,
       vsync: this,
       initialIndex: userRole == "teacher" ? 0 : 1,
     );
-    
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      controller.loadCourses();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      // Cargar cursos que enseña
+      await courseController.loadTeacherCourses();
+
+      // 🔹 Aquí asumimos que el controlador de auth ya tiene el userId
+      final auth = Get.find<AuthenticationController>();
+      final userId = auth.currentUser.value?.id;
+      if (userId != null) {
+        // Cargar IDs de cursos inscritos
+        await userCourseController.fetchUserCourses(userId);
+
+        // 🔹 Ahora traemos los cursos completos con esos IDs
+        final enrolled = await courseController.loadCoursesByIds(
+          userCourseController.userCourses,
+        );
+
+        // Guardamos los cursos inscritos en un observable local
+        _enrolledCourses.assignAll(enrolled);
+      }
     });
   }
 
@@ -54,7 +76,7 @@ class _CourseDashboardState extends State<CourseDashboard>
     setState(() {
       copiedCode = code;
     });
-    
+
     Get.snackbar(
       "Código copiado",
       code,
@@ -123,7 +145,7 @@ class _CourseDashboardState extends State<CourseDashboard>
   }
 
   Future<void> _createCourse() async {
-    final canCreate = await controller.canCreateMore();
+    final canCreate = await courseController.canCreateMore();
     if (!canCreate) {
       Get.snackbar(
         "Límite alcanzado",
@@ -135,18 +157,16 @@ class _CourseDashboardState extends State<CourseDashboard>
       return;
     }
 
-    final result = await Get.dialog<Course>(
-      CourseFormDialog(),
-    );
-    
+    final result = await Get.dialog<Course>(CourseFormDialog());
+
     if (result != null) {
       try {
-        await controller.addCourse(
+        await courseController.addCourse(
           name: result.name,
           code: result.code,
           maxStudents: result.maxStudents,
         );
-        
+
         Get.snackbar(
           "¡Éxito!",
           "Curso '${result.name}' creado correctamente",
@@ -167,14 +187,12 @@ class _CourseDashboardState extends State<CourseDashboard>
   }
 
   Future<void> _editCourse(Course course) async {
-    final result = await Get.dialog<Course>(
-      CourseFormDialog(course: course),
-    );
-    
+    final result = await Get.dialog<Course>(CourseFormDialog(course: course));
+
     if (result != null) {
       try {
-        await controller.updateCourseInList(result);
-        
+        await courseController.updateCourseInList(result);
+
         Get.snackbar(
           "¡Éxito!",
           "Curso '${result.name}' actualizado correctamente",
@@ -209,18 +227,16 @@ class _CourseDashboardState extends State<CourseDashboard>
           ),
           TextButton(
             onPressed: () => Get.back(result: true),
-            style: TextButton.styleFrom(
-              foregroundColor: Colors.red,
-            ),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
             child: const Text("Eliminar"),
           ),
         ],
       ),
     );
-    
+
     if (confirm == true) {
-      await controller.deleteCourseFromList(course.id);
-      
+      await courseController.deleteCourseFromList(course.id);
+
       Get.snackbar(
         "Curso eliminado",
         "El curso '${course.name}' ha sido eliminado",
@@ -245,11 +261,7 @@ class _CourseDashboardState extends State<CourseDashboard>
                 color: Theme.of(context).primaryColor,
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: const Icon(
-                Icons.school,
-                color: Colors.white,
-                size: 24,
-              ),
+              child: const Icon(Icons.school, color: Colors.white, size: 24),
             ),
             const SizedBox(width: 12),
             const Column(
@@ -266,10 +278,7 @@ class _CourseDashboardState extends State<CourseDashboard>
                 ),
                 Text(
                   'Home',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey,
-                  ),
+                  style: TextStyle(fontSize: 12, color: Colors.grey),
                 ),
               ],
             ),
@@ -282,20 +291,19 @@ class _CourseDashboardState extends State<CourseDashboard>
             },
             icon: const Icon(Icons.settings, size: 16),
             label: const Text('Ajustes'),
-            style: OutlinedButton.styleFrom(
-              foregroundColor: Colors.grey[700],
-            ),
+            style: OutlinedButton.styleFrom(foregroundColor: Colors.grey[700]),
           ),
           const SizedBox(width: 16),
         ],
         bottom: TabBar(
           controller: _tabController,
           tabs: [
-            Obx(() => Tab(
-              text: 'Enseñando (${controller.courses.length}/3)',
-            )),
-            const Tab(
-              text: 'Inscrito (0)', // Falta por implementar los estudiantes en el curso
+            const Tab(text: 'Mis Cursos'), // 👨‍🏫 Profesor
+            Obx(
+              () => Tab(
+                // 👨‍🎓 Alumno
+                text: 'Inscrito (${_enrolledCourses.length})',
+              ),
             ),
           ],
           labelColor: Theme.of(context).primaryColor,
@@ -305,10 +313,7 @@ class _CourseDashboardState extends State<CourseDashboard>
       ),
       body: TabBarView(
         controller: _tabController,
-        children: [
-          _buildTeachingTab(),
-          _buildEnrolledTab(),
-        ],
+        children: [_buildTeachingTab(), _buildEnrolledTab()],
       ),
     );
   }
@@ -327,37 +332,36 @@ class _CourseDashboardState extends State<CourseDashboard>
                 children: [
                   Text(
                     'Mis Cursos',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w600,
-                    ),
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
                   ),
                 ],
               ),
-              Obx(() => ElevatedButton.icon(
-                onPressed: controller.courses.length >= 3 
-                  ? null 
-                  : _createCourse,
-                icon: const Icon(Icons.add),
-                label: const Text('Crear Curso'),
-              )),
+              Obx(
+                () => ElevatedButton.icon(
+                  onPressed: courseController.courses.length >= 3
+                      ? null
+                      : _createCourse,
+                  icon: const Icon(Icons.add),
+                  label: const Text('Crear Curso'),
+                ),
+              ),
             ],
           ),
           const SizedBox(height: 24),
           Expanded(
             child: Obx(() {
-              if (controller.loading.value) {
+              if (courseController.loading.value) {
                 return const Center(child: CircularProgressIndicator());
               }
-              
-              if (controller.error.isNotEmpty) {
+
+              if (courseController.error.isNotEmpty) {
                 return _buildErrorState();
               }
-              
-              if (controller.courses.isEmpty) {
+
+              if (courseController.courses.isEmpty) {
                 return _buildEmptyTeachingState();
               }
-              
+
               return _buildCoursesGrid();
             }),
           ),
@@ -375,17 +379,19 @@ class _CourseDashboardState extends State<CourseDashboard>
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Cursos Inscritos',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w600,
+              Obx(
+                () => Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Cursos Inscritos (${_enrolledCourses.length})',
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
               OutlinedButton.icon(
                 onPressed: _showJoinCourseDialog,
@@ -396,10 +402,39 @@ class _CourseDashboardState extends State<CourseDashboard>
           ),
           const SizedBox(height: 24),
           Expanded(
-            child: _buildEmptyStudentState(),
+            child: Obx(() {
+              if (_enrolledCourses.isEmpty) {
+                return _buildEmptyStudentState();
+              }
+
+              return _buildEnrolledCoursesGrid();
+            }),
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildEnrolledCoursesGrid() {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        int crossAxisCount = 1;
+        if (constraints.maxWidth > 600) crossAxisCount = 2;
+        if (constraints.maxWidth > 900) crossAxisCount = 3;
+
+        return GridView.builder(
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: crossAxisCount,
+            crossAxisSpacing: 16,
+            mainAxisSpacing: 16,
+            childAspectRatio: 0.85,
+          ),
+          itemCount: _enrolledCourses.length,
+          itemBuilder: (context, index) {
+            return _buildCourseCard(_enrolledCourses[index]);
+          },
+        );
+      },
     );
   }
 
@@ -413,7 +448,7 @@ class _CourseDashboardState extends State<CourseDashboard>
         if (constraints.maxWidth > 900) {
           crossAxisCount = 3;
         }
-        
+
         return GridView.builder(
           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: crossAxisCount,
@@ -421,9 +456,9 @@ class _CourseDashboardState extends State<CourseDashboard>
             mainAxisSpacing: 16,
             childAspectRatio: 0.85,
           ),
-          itemCount: controller.courses.length,
+          itemCount: courseController.courses.length,
           itemBuilder: (context, index) {
-            return _buildCourseCard(controller.courses[index]);
+            return _buildCourseCard(courseController.courses[index]);
           },
         );
       },
@@ -432,10 +467,10 @@ class _CourseDashboardState extends State<CourseDashboard>
 
   Widget _buildCourseCard(Course course) {
     final inviteCode = _generateInviteCode(course);
-    final formattedDate = course.createdAt != null 
+    final formattedDate = course.createdAt != null
         ? "${course.createdAt!.day}/${course.createdAt!.month}/${course.createdAt!.year}"
         : "Sin fecha";
-    
+
     return Card(
       elevation: 2,
       child: InkWell(
@@ -511,7 +546,10 @@ class _CourseDashboardState extends State<CourseDashboard>
                           children: [
                             Icon(Icons.delete, size: 16, color: Colors.red),
                             SizedBox(width: 8),
-                            Text('Eliminar', style: TextStyle(color: Colors.red)),
+                            Text(
+                              'Eliminar',
+                              style: TextStyle(color: Colors.red),
+                            ),
                           ],
                         ),
                         onTap: () => Future.delayed(
@@ -523,9 +561,9 @@ class _CourseDashboardState extends State<CourseDashboard>
                   ),
                 ],
               ),
-              
+
               const SizedBox(height: 16),
-              
+
               // Información adicional del curso
               Container(
                 padding: const EdgeInsets.all(12),
@@ -578,10 +616,10 @@ class _CourseDashboardState extends State<CourseDashboard>
                   ],
                 ),
               ),
-              
+
               const SizedBox(height: 12),
-              
-              // Estadísticas simuladas 
+
+              // Estadísticas simuladas
               Row(
                 children: [
                   Expanded(
@@ -597,10 +635,7 @@ class _CourseDashboardState extends State<CourseDashboard>
                         ),
                         const Text(
                           'Estudiantes',
-                          style: TextStyle(
-                            fontSize: 10,
-                            color: Colors.grey,
-                          ),
+                          style: TextStyle(fontSize: 10, color: Colors.grey),
                         ),
                       ],
                     ),
@@ -618,10 +653,7 @@ class _CourseDashboardState extends State<CourseDashboard>
                         ),
                         const Text(
                           'Categorias',
-                          style: TextStyle(
-                            fontSize: 10,
-                            color: Colors.grey,
-                          ),
+                          style: TextStyle(fontSize: 10, color: Colors.grey),
                         ),
                       ],
                     ),
@@ -639,19 +671,16 @@ class _CourseDashboardState extends State<CourseDashboard>
                         ),
                         const Text(
                           'Actividades',
-                          style: TextStyle(
-                            fontSize: 10,
-                            color: Colors.grey,
-                          ),
+                          style: TextStyle(fontSize: 10, color: Colors.grey),
                         ),
                       ],
                     ),
                   ),
                 ],
               ),
-              
+
               const SizedBox(height: 16),
-              
+
               // Codigo de invitacion
               Container(
                 padding: const EdgeInsets.only(top: 16),
@@ -662,11 +691,7 @@ class _CourseDashboardState extends State<CourseDashboard>
                 ),
                 child: Row(
                   children: [
-                    const Icon(
-                      Icons.share,
-                      size: 16,
-                      color: Colors.grey,
-                    ),
+                    const Icon(Icons.share, size: 16, color: Colors.grey),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
@@ -681,9 +706,7 @@ class _CourseDashboardState extends State<CourseDashboard>
                     IconButton(
                       onPressed: () => _copyInviteCode(inviteCode),
                       icon: Icon(
-                        copiedCode == inviteCode
-                            ? Icons.check
-                            : Icons.copy,
+                        copiedCode == inviteCode ? Icons.check : Icons.copy,
                         size: 16,
                         color: copiedCode == inviteCode
                             ? Colors.green
@@ -709,10 +732,10 @@ class _CourseDashboardState extends State<CourseDashboard>
         children: [
           Icon(Icons.error, size: 64, color: Colors.red[300]),
           const SizedBox(height: 16),
-          Text("Error: ${controller.error}"),
+          Text("Error: ${courseController.error}"),
           const SizedBox(height: 16),
           ElevatedButton(
-            onPressed: () => controller.loadCourses(),
+            onPressed: () => courseController.loadTeacherCourses(),
             child: const Text("Reintentar"),
           ),
         ],
@@ -728,26 +751,17 @@ class _CourseDashboardState extends State<CourseDashboard>
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(
-                Icons.book,
-                size: 48,
-                color: Colors.grey[400],
-              ),
+              Icon(Icons.book, size: 48, color: Colors.grey[400]),
               const SizedBox(height: 16),
               const Text(
                 'Aún no tienes cursos',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                ),
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
               ),
               const SizedBox(height: 8),
               const Text(
                 'Crea tu primer curso para comenzar a gestionar actividades colaborativas.',
                 textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: Colors.grey,
-                ),
+                style: TextStyle(color: Colors.grey),
               ),
               const SizedBox(height: 16),
               ElevatedButton.icon(
@@ -770,26 +784,17 @@ class _CourseDashboardState extends State<CourseDashboard>
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(
-                Icons.group,
-                size: 48,
-                color: Colors.grey[400],
-              ),
+              Icon(Icons.group, size: 48, color: Colors.grey[400]),
               const SizedBox(height: 16),
               const Text(
                 'No estás inscrito en cursos',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                ),
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
               ),
               const SizedBox(height: 8),
               const Text(
                 'Pide a tu profesor un código de invitación para unirte a un curso.',
                 textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: Colors.grey,
-                ),
+                style: TextStyle(color: Colors.grey),
               ),
               const SizedBox(height: 16),
               OutlinedButton.icon(

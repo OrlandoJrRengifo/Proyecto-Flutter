@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../controller/auth_controller.dart';
 import 'registerScreen.dart';
-import '../../../../courses/presentation/pages/courses_page.dart';
-import 'dummy.dart';
+import '../../../courses/presentation/pages/courses_page.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});

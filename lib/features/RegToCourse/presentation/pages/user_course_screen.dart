@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../auth/presentation/controller/auth_controller.dart';
 import '../controller/user_course_controller.dart';
-import '../../../../courses/domain/entities/course.dart';
-import '../../../../courses/domain/usecases/course_usecases.dart';
+import '../../../courses/domain/entities/course.dart';
+import '../../../courses/domain/usecases/course_usecases.dart';
 
 
 class UserCoursesPage extends StatelessWidget {

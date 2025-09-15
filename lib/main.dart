@@ -10,19 +10,12 @@ import 'categories/data/datasources/category_local_datasource_sqflite.dart';
 import 'categories/data/repositories/category_repository_impl.dart';
 import 'categories/controllers/categories_controller.dart';
 // Cursos
-import 'courses/domain/repositories/course_repository.dart';
-import 'courses/domain/usecases/course_usecases.dart';
-import 'courses/data/datasources/i_course_local_datasource.dart';
-import 'courses/data/datasources/course_local_datasource_sqflite.dart';
-import 'courses/data/repositories/course_repository_impl.dart';
-import 'courses/presentation/controller/course_controller.dart'; 
-import 'courses/presentation/pages/courses_page.dart';
-
-// SQFLite para web (para pruebas)
-//import 'package:flutter/foundation.dart' show kIsWeb;
-//import 'dart:io' show Platform;
-//import 'package:sqflite_common_ffi/sqflite_ffi.dart';
-//import 'package:sqflite_common_ffi_web/sqflite_ffi_web.dart';
+import 'features/courses/domain/repositories/i_course_repository.dart';
+import 'features/courses/domain/usecases/course_usecases.dart';
+import 'features/courses/data/datasources/i_course_local_datasource.dart';
+import 'features/courses/data/datasources/course_local_datasource_sqflite.dart';
+import 'features/courses/data/repositories/course_repository.dart';
+import 'features/courses/presentation/controller/course_controller.dart'; 
 
 
 // Inscripciones
@@ -63,7 +56,7 @@ void main() async {
 
   // ==================== Cursos ====================
   Get.lazyPut<ICourseLocalDataSource>(() => CourseLocalDataSourceSqflite(), fenix: true);
-  Get.lazyPut<CourseRepository>(() => CourseRepositoryImpl(Get.find()), fenix: true);
+  Get.lazyPut<ICourseRepository>(() => CourseRepository(Get.find()), fenix: true);
   Get.lazyPut(() => CourseUseCases(Get.find()), fenix: true);
   Get.put(CoursesController(useCases: Get.find()), permanent: true);
 

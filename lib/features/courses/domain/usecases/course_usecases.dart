@@ -1,8 +1,8 @@
 import '../entities/course.dart';
-import '../repositories/course_repository.dart';
+import '../repositories/i_course_repository.dart';
 
 class CourseUseCases {
-  final CourseRepository repository;
+  final ICourseRepository repository;
   
   CourseUseCases(this.repository);
 

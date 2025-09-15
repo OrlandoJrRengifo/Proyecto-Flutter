@@ -1,7 +1,7 @@
 import 'package:get/get.dart';
 import '../../domain/entities/course.dart';
 import '../../domain/usecases/course_usecases.dart';
-import '../../../features/auth/presentation/controller/auth_controller.dart';
+import '../../../auth/presentation/controller/auth_controller.dart';
 
 class CoursesController extends GetxController {
   final CourseUseCases useCases;
@@ -22,7 +22,7 @@ class CoursesController extends GetxController {
     // Se ejecuta cada vez que cambia el usuario logueado
     ever(_authController.currentUser, (user) {
       if (user != null) {
-        loadCourses(); // Cargar cursos automáticamente
+        loadTeacherCourses(); // Cargar cursos automáticamente
       } else {
         courses.clear(); // Limpiar lista si no hay usuario
       }
@@ -30,12 +30,12 @@ class CoursesController extends GetxController {
 
     // Cargar cursos si ya hay usuario logueado al iniciar
     if (_authController.currentUser.value != null) {
-      loadCourses();
+      loadTeacherCourses();
     }
   }
 
-  /// Carga los cursos del usuario logueado
-  Future<void> loadCourses() async {
+  /// Carga los cursos dictados por usuario logueado
+  Future<void> loadTeacherCourses() async {
     final user = _authController.currentUser.value;
     if (user == null) {
       error.value = "Usuario no logueado";
@@ -53,6 +53,29 @@ class CoursesController extends GetxController {
     } catch (e) {
       error.value = e.toString();
       print("❌ Error al cargar cursos: $e");
+    } finally {
+      loading.value = false;
+    }
+  }
+
+  Future<List<Course>> loadCoursesByIds(List<int> courseIds) async {
+    try {
+      loading.value = true;
+      error.value = '';
+
+      final List<Course> result = [];
+      for (final id in courseIds) {
+        final course = await useCases.getCourse(id);
+        if (course != null) {
+          result.add(course);
+        }
+      }
+
+      return result;
+    } catch (e) {
+      error.value = e.toString();
+      print("❌ Error al cargar cursos por IDs: $e");
+      return [];
     } finally {
       loading.value = false;
     }

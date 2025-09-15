@@ -1,12 +1,12 @@
 import '../../domain/entities/course.dart';
-import '../../domain/repositories/course_repository.dart';
+import '../../domain/repositories/i_course_repository.dart';
 import '../datasources/i_course_local_datasource.dart';
 import '../models/course_model.dart';
 
-class CourseRepositoryImpl implements CourseRepository {
+class CourseRepository implements ICourseRepository {
   final ICourseLocalDataSource localDataSource;
   
-  CourseRepositoryImpl(this.localDataSource);
+  CourseRepository(this.localDataSource);
 
   @override
   Future<Course> create(Course course) async {
