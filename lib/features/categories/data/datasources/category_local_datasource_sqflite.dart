@@ -1,5 +1,5 @@
 import 'package:sqflite/sqflite.dart';
-import '../../../../core/app_database.dart';
+import '../../../../../core/app_database.dart';
 import '../models/category_model.dart';
 import 'i_category_local_datasource.dart';
 

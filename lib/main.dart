@@ -3,12 +3,12 @@ import 'package:get/get.dart';
 import 'core/app_database.dart';
 
 // Categorias
-import 'categories/domain/repositories/category_repository.dart';
-import 'categories/domain/usecases/category_usecases.dart';
-import 'categories/data/datasources/i_category_local_datasource.dart';
-import 'categories/data/datasources/category_local_datasource_sqflite.dart';
-import 'categories/data/repositories/category_repository_impl.dart';
-import 'categories/controllers/categories_controller.dart';
+import 'features/categories/domain/repositories/category_repository.dart';
+import 'features/categories/domain/usecases/category_usecases.dart';
+import 'features/categories/data/datasources/i_category_local_datasource.dart';
+import 'features/categories/data/datasources/category_local_datasource_sqflite.dart';
+import 'features/categories/data/repositories/category_repository_impl.dart';
+import 'features/categories/controllers/categories_controller.dart';
 // Cursos
 import 'features/courses/domain/repositories/i_course_repository.dart';
 import 'features/courses/domain/usecases/course_usecases.dart';

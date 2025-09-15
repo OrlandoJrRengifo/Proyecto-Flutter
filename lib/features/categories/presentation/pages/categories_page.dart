@@ -3,7 +3,7 @@ import 'package:get/get.dart';
 
 import '../../domain/entities/category.dart';
 import '../../controllers/categories_controller.dart';
-import '../../presentation/widgets/category_form.dart';
+import '../widgets/category_form.dart';
 
 class CategoriesPage extends StatefulWidget {
   final int courseId;
