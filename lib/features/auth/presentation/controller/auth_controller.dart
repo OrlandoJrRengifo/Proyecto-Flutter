@@ -17,6 +17,22 @@ class AuthenticationController extends GetxController {
     logInfo('AuthenticationController initialized');
   }
 
+  Future<List<Map<String, dynamic>>> getUsers(List<int> userIds) async {
+    final List<Map<String, dynamic>> result = [];
+
+    for (final id in userIds) {
+      final user = await _authUseCase.getUser(id);
+      if (user != null) {
+        result.add({
+          "id": user.id,
+          "name": user.name,
+        });
+      }
+    }
+
+    return result;
+  }
+
   Future<bool> login(String email, String password) async {
     final user = await _authUseCase.login(email, password);
     if (user != null) {

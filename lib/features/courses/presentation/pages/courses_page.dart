@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_application_1/features/courses/presentation/pages/courseDetail_page.dart';
 import 'package:get/get.dart';
 
 import '../../domain/entities/course.dart';
@@ -475,8 +476,13 @@ class _CourseDashboardState extends State<CourseDashboard>
       elevation: 2,
       child: InkWell(
         onTap: () {
+          /*
           Get.to(
             () => CategoriesPage(courseId: course.id!),
+            transition: Transition.rightToLeft,
+          );*/
+          Get.to(
+            () => CourseDetailPage(courseId: course.id!,courseName: course.name),
             transition: Transition.rightToLeft,
           );
         },

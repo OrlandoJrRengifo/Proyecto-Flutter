@@ -7,6 +7,23 @@ class AuthSqfliteSource implements IAuthenticationSource {
   Future<Database> get _db async => await AppDatabase.instance;
 
   @override
+  Future<User?> getUser(int userId) async {
+    final db = await _db;
+
+    final maps = await db.query(
+      'users',
+      where: 'id = ?',
+      whereArgs: [userId],
+      limit: 1,
+    );
+
+    if (maps.isNotEmpty) {
+      return User.fromJson(maps.first);
+    }
+    return null;
+  }
+
+  @override
   Future<User?> login(String email, String password) async {
     final db = await AppDatabase.instance;
     final maps = await db.query(

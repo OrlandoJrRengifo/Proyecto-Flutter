@@ -27,6 +27,12 @@ class AuthFakeSource implements IAuthenticationSource {
 
   List<Map<String, dynamic>> get _users =>
       List<Map<String, dynamic>>.from(_jsonDb["users"]);
+  
+  @override
+  Future<User?> getUser(int userId) {
+    // TODO: implement getUser
+    throw UnimplementedError();
+  }
 
   @override
   Future<User?> login(String email, String password) async {
