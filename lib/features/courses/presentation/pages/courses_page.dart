@@ -476,15 +476,18 @@ class _CourseDashboardState extends State<CourseDashboard>
       elevation: 2,
       child: InkWell(
         onTap: () {
-          /*
+
           Get.to(
             () => CategoriesPage(courseId: course.id!),
             transition: Transition.rightToLeft,
-          );*/
+          );
+
+          /*
           Get.to(
             () => CourseDetailPage(courseId: course.id!,courseName: course.name),
             transition: Transition.rightToLeft,
           );
+          */
         },
         borderRadius: BorderRadius.circular(8),
         child: Padding(

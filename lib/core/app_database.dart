@@ -38,6 +38,18 @@ class AppDatabase {
           )
         ''');
 
+        // Tabla de categorías
+        await db.execute('''
+          CREATE TABLE categories(
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            courseId INTEGER NOT NULL,
+            name TEXT NOT NULL,
+            groupingMethod TEXT NOT NULL,
+            maxGroupSize INTEGER,
+            createdAt TEXT DEFAULT (datetime('now'))
+          )
+        ''');
+
         // Tabla intermedia usuario ↔ curso
         await db.execute('''
           CREATE TABLE user_courses(

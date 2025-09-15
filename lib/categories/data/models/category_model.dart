@@ -18,15 +18,45 @@ class CategoryModel extends Category {
         );
 
   factory CategoryModel.fromMap(Map<String, dynamic> m) {
+    final idValue = m['id'];
+    final int? id = idValue == null
+        ? null
+        : (idValue is int ? idValue : int.tryParse(idValue.toString()));
+
+    final courseRaw = m['courseId'];
+    final courseId = courseRaw is int
+        ? courseRaw
+        : int.parse(courseRaw.toString()); 
+
+    final name = (m['name'] ?? '').toString();
+
+    // groupingMethod: manejar explícitamente 'random' y 'self_assigned', fallback seguro
+    final groupingStr = (m['groupingMethod'] ?? '').toString();
+    final groupingMethod = groupingStr == 'random'
+        ? GroupingMethod.random
+        : groupingStr == 'self_assigned'
+            ? GroupingMethod.selfAssigned
+            : GroupingMethod.selfAssigned;
+
+    final maxRaw = m['maxGroupSize'];
+    final int? maxGroupSize = maxRaw == null
+        ? null
+        : (maxRaw is int ? maxRaw : int.tryParse(maxRaw.toString()));
+
+    final createdRaw = m['createdAt'];
+    final DateTime? createdAt = createdRaw == null
+        ? null
+        : (createdRaw is DateTime
+            ? createdRaw
+            : DateTime.tryParse(createdRaw.toString()));
+
     return CategoryModel(
-      id: m['id'] is int ? m['id'] as int : (m['id'] != null ? int.parse(m['id'].toString()) : null),
-      courseId: m['courseId'] is int ? m['courseId'] as int : int.parse(m['courseId'].toString()),
-      name: m['name'] as String,
-      groupingMethod: (m['groupingMethod'] as String?) == 'random' 
-          ? GroupingMethod.random 
-          : GroupingMethod.selfAssigned,
-      maxGroupSize: m['maxGroupSize'] != null ? (m['maxGroupSize'] as int?) : null,
-      createdAt: m['createdAt'] != null ? DateTime.parse(m['createdAt'] as String) : null,
+      id: id,
+      courseId: courseId,
+      name: name,
+      groupingMethod: groupingMethod,
+      maxGroupSize: maxGroupSize,
+      createdAt: createdAt,
     );
   }
 
@@ -34,11 +64,13 @@ class CategoryModel extends Category {
     final map = <String, dynamic>{
       'courseId': courseId,
       'name': name,
-      'groupingMethod': groupingMethod == GroupingMethod.random ? 'random' : 'self_assigned',
+      'groupingMethod':
+          groupingMethod == GroupingMethod.random ? 'random' : 'self_assigned',
       'maxGroupSize': maxGroupSize,
     };
-    
+
     if (id != null) map['id'] = id;
+    if (createdAt != null) map['createdAt'] = createdAt!.toIso8601String();
     return map;
   }
 
